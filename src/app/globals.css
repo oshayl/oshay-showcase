@@ -1,0 +1,66 @@
+/* ================================================
+   OSJAY SHOWCASE — GLOBAL STYLES
+   Minimalist. Glass-forward. No bullshit.
+   ================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --black: #000000;
+  --white: #ffffff;
+  --tan: #d4b996;
+  --amber: #ffc15c;
+  --cream: #f5f0e8;
+  --dark: #0a0a0a;
+  --card-bg: #111111;
+  --border-subtle: rgba(255,255,255,0.06);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--black);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--tan);
+  color: var(--black);
+}
+
+/* Minimal scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--tan);
+  border-radius: 2px;
+}
+
+/* Utility */
+.font-display {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
