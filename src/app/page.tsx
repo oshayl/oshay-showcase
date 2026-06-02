@@ -104,7 +104,9 @@ function Icon({ name, size = 24, className = '' }: { name: string; size?: number
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setMounted(true);
     const el = ref.current;
     if (!el) return;
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -116,16 +118,20 @@ function useInView(threshold = 0.15) {
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
-  return { ref, inView };
+  return { ref, inView, mounted };
 }
 
 function Reveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  const { ref, inView } = useInView(0.1);
+  const { ref, inView, mounted } = useInView(0.1);
+  // Content is always visible for SSR/initial paint.
+  // After JS mounts, we apply the reveal animation: starts hidden, animates in when scrolled into view.
+  // This prevents the "blank page" problem if JS is slow or blocked.
+  const animating = mounted && !inView;
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'} ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${animating ? 'opacity-0 translate-y-6' : 'opacity-100 translate-y-0'} ${className}`}
+      style={animating ? { transitionDelay: `${delay}ms` } : undefined}
     >
       {children}
     </div>
