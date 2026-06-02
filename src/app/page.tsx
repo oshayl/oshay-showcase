@@ -1,71 +1,431 @@
-import Link from 'next/link'
+'use client';
 
-export default function Home() {
-  const variations = [
-    {
-      id: 'v1',
-      name: 'Glass Monolith',
-      desc: 'Vertical stack. Glass panels floating on void. Maximum whitespace.',
-      path: '/v1',
-    },
-    {
-      id: 'v2',
-      name: 'Glass Split',
-      desc: 'Two-column. Logos left, copy right. Glass divider wall.',
-      path: '/v2',
-    },
-    {
-      id: 'v3',
-      name: 'Bento Glass',
-      desc: 'Grid cards. Each module is a glass tile. Dense but clean.',
-      path: '/v3',
-    },
-    {
-      id: 'v4',
-      name: 'Full Bleed Hero',
-      desc: 'Massive glass hero that morphs into sections on scroll.',
-      path: '/v4',
-    },
-    {
-      id: 'v5',
-      name: 'Dark Editorial',
-      desc: 'Large type. Subtle glass accents. Magazine feel.',
-      path: '/v5',
-    },
-    {
-      id: 'v6',
-      name: 'Glass Tunnel',
-      desc: 'Walking through glass. Each section is a glass corridor.',
-      path: '/v6',
-    },
-  ]
+import { useEffect, useRef, useState } from 'react';
+
+/* ───────────────────────────
+   DATA
+   ─────────────────────────── */
+
+const NOIRA_SERVICES = [
+  {
+    title: 'Websites',
+    desc: 'Landing pages, multi-page sites, e-commerce. Designed around your workflow, not a template.',
+    icon: 'monitor',
+  },
+  {
+    title: 'Automation',
+    desc: 'Lead notifications, follow-up sequences, pipeline tracking. Your business runs even when you\'re not watching.',
+    icon: 'zap',
+  },
+  {
+    title: 'Lead Forms',
+    desc: 'Multi-step forms that capture the right info and pipe it straight to where you need it.',
+    icon: 'clipboard',
+  },
+  {
+    title: 'CRM',
+    desc: 'Client tracking, project management, invoicing. Zero subscription fees. Fully yours.',
+    icon: 'users',
+  },
+  {
+    title: 'Photo Pipeline',
+    desc: 'Send iPhone photos. Get enhanced variations back. AI-powered with your style guardrails baked in.',
+    icon: 'camera',
+  },
+  {
+    title: 'Creative',
+    desc: 'Film, video, ad management, content scraping. The full creative stack for businesses that need someone who shows up.',
+    icon: 'play',
+  },
+];
+
+const SHAY_SERVICES = [
+  {
+    title: 'UI/UX Design',
+    desc: 'Interfaces built around how people actually use them. Not pretty for the sake of it.',
+    icon: 'layout',
+  },
+  {
+    title: 'Brand Identity',
+    desc: 'Logos, visual systems, style guides. Your brand, consistent across everything.',
+    icon: 'feather',
+  },
+  {
+    title: 'Video Production',
+    desc: 'Directing, editing, color grading, motion design. From concept to final cut.',
+    icon: 'film',
+  },
+  {
+    title: 'Photo Enhancement',
+    desc: 'iPhone shots to polished visuals. Fast turnaround, consistent quality.',
+    icon: 'aperture',
+  },
+  {
+    title: 'Merchandise',
+    desc: 'Product design and mockups. Apparel, packaging, print.',
+    icon: 'package',
+  },
+  {
+    title: 'Content Strategy',
+    desc: 'SEO, social, copy. The stuff that gets eyeballs on the work you already do.',
+    icon: 'pen-tool',
+  },
+];
+
+/* ───────────────────────────
+   ICONS (inline SVG, Phosphor Bold style)
+   ─────────────────────────── */
+
+function Icon({ name, size = 24, className = '' }: { name: string; size?: number; className?: string }) {
+  const icons: Record<string, React.ReactNode> = {
+    monitor: <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor"><rect x="32" y="48" width="192" height="144" rx="16" fill="none" stroke="currentColor" strokeWidth="24"/><line x1="80" y1="224" x2="176" y2="224" stroke="currentColor" strokeWidth="24" strokeLinecap="round"/><line x1="128" y1="192" x2="128" y2="224" stroke="currentColor" strokeWidth="24"/></svg>,
+    zap: <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor"><polygon points="152,32 48,144 120,144 104,224 208,112 136,112" /></svg>,
+    clipboard: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><rect x="56" y="56" width="144" height="152" rx="8"/><line x1="96" y1="56" x2="96" y2="40" strokeLinecap="round"/><line x1="160" y1="56" x2="160" y2="40" strokeLinecap="round"/><line x1="80" y1="112" x2="176" y2="112" strokeLinecap="round"/><line x1="80" y1="144" x2="176" y2="144" strokeLinecap="round"/><line x1="80" y1="176" x2="136" y2="176" strokeLinecap="round"/></svg>,
+    users: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><circle cx="96" cy="96" r="40"/><path d="M32,224a64,64,0,0,1,128,0"/><circle cx="176" cy="104" r="32"/><path d="M200,224a56,56,0,0,0-48-55.3"/></svg>,
+    camera: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><path d="M48,208H208a16,16,0,0,0,16-16V80a16,16,0,0,0-16-16H179.3a8,8,0,0,1-7.2-4.4L167.5,51.6A8,8,0,0,0,160.3,48H95.7a8,8,0,0,0-7.2,3.6L83.9,59.6A8,8,0,0,1,76.7,64H48A16,16,0,0,0,32,80V192A16,16,0,0,0,48,208Z"/><circle cx="128" cy="132" r="36"/></svg>,
+    play: <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor"><path d="M240,128a16,16,0,0,1-8.1,13.9l-152,88A16,16,0,0,1,56,216V40A16,16,0,0,1,79.9,26.1l152,88A16,16,0,0,1,240,128Z"/></svg>,
+    layout: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><rect x="40" y="40" width="176" height="176" rx="12"/><line x1="40" y1="104" x2="216" y2="104"/><line x1="128" y1="104" x2="128" y2="216"/></svg>,
+    feather: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><path d="M216,40a8,8,0,0,0-11.3,0L168,76.7,150.6,59.3A8,8,0,0,0,139.3,59.3L107.6,91A106.9,106.9,0,0,0,76,168c0,1.2,0,2.4,0,3.6L28.7,219.3a8,8,0,0,0,0,11.3A8.2,8.2,0,0,0,34.7,232a8.2,8.2,0,0,0,5.6-2.3L87.6,182.4c1.2,0,2.4.1,3.6.1a106.9,106.9,0,0,0,76.9-31.6L200,118.6a8,8,0,0,0,0-11.3L182.6,90,219.3,53.3A8,8,0,0,0,219.3,42Z"/></svg>,
+    film: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><rect x="40" y="40" width="176" height="176" rx="8"/><line x1="76" y1="40" x2="76" y2="216"/><line x1="180" y1="40" x2="180" y2="216"/><line x1="40" y1="76" x2="216" y2="76"/><line x1="40" y1="180" x2="216" y2="180"/></svg>,
+    aperture: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="20"><circle cx="128" cy="128" r="88"/><line x1="61.1" y1="168" x2="194.9" y2="88" strokeLinecap="round"/><line x1="61.1" y1="88" x2="194.9" y2="168" strokeLinecap="round"/><line x1="128" y1="40" x2="128" y2="216" strokeLinecap="round"/><line x1="40" y1="128" x2="216" y2="128" strokeLinecap="round"/></svg>,
+    package: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><path d="M224,77.2v101.6a8,8,0,0,1-4.1,7l-88,49.5a8,8,0,0,1-7.8,0l-88-49.5a8,8,0,0,1-4.1-7V77.2a8,8,0,0,1,4.1-7l88-49.5a8,8,0,0,1,7.8,0l88,49.5A8,8,0,0,1,224,77.2Z"/><polyline points="128,128 128,230" /><line x1="128" y1="128" x2="222.9" y2="74.1" /><line x1="33.1" y1="74.1" x2="128" y2="128" /></svg>,
+    'pen-tool': <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><path d="M247.1,75.7,180.3,8.9a8,8,0,0,0-11.3,0L123.3,54.6a8,8,0,0,0,0,11.3l5.8,5.8L24.7,176.1a8.1,8.1,0,0,0-2.3,5.2L16,232a8,8,0,0,0,8,8h.7l50.7-6.4a8.1,8.1,0,0,0,5.2-2.3L184.3,126.9l5.8,5.8a8,8,0,0,0,11.3,0L247.1,87A8,8,0,0,0,247.1,75.7Z"/><circle cx="128" cy="128" r="12" fill="currentColor"/></svg>,
+    arrowUpRight: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><line x1="64" y1="192" x2="192" y2="64" strokeLinecap="round"/><polyline points="112 64 192 64 192 144" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    phone: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><path d="M222.4,145.6l-46.9-18.8a16,16,0,0,0-15.2,2.1l-24.2,18.2A126.9,126.9,0,0,1,111,100.9l18.2-24.2a16,16,0,0,0,2.1-15.2L112.4,14.5A16,16,0,0,0,97.6,4L42.4,17.2A16,16,0,0,0,32,32c0,106,86,192,192,192a16,16,0,0,0,14.8-10.4l13.2-55.2A16,16,0,0,0,242.4,144,16,16,0,0,0,222.4,145.6Z"/></svg>,
+    mail: <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="24"><rect x="32" y="56" width="192" height="144" rx="8"/><polyline points="224,56 128,144 32,56" strokeLinejoin="round"/></svg>,
+  };
+  return <span className={`inline-flex items-center justify-center ${className}`}>{icons[name] || null}</span>;
+}
+
+/* ───────────────────────────
+   REVEAL / ANIMATION
+   ─────────────────────────── */
+
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) { setInView(true); return; }
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, inView };
+}
+
+function Reveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  const { ref, inView } = useInView(0.1);
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'} ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ───────────────────────────
+   NAV
+   ─────────────────────────── */
+
+function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center p-8">
-      <div className="max-w-4xl w-full">
-        <p className="text-[#d4b996] text-xs tracking-[0.4em] uppercase mb-4">6 Variations</p>
-        <h1 className="font-display text-5xl md:text-7xl font-bold mb-4 leading-[0.9]">
-          Pick your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4b996] to-[#ffc15c]">experience</span>
-        </h1>
-        <p className="text-gray-500 mb-16 text-lg">Minimalist. Glass-forward. Shader-powered.</p>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/90 backdrop-blur-xl shadow-[0_1px_0_0_rgba(0,0,0,0.06)]' : 'bg-transparent'}`}>
+      <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
+        <a href="#" className="text-lg font-semibold tracking-[-0.02em] text-[var(--color-charcoal)]">
+          O&apos;Shay<span className="text-[var(--color-accent)]">.</span>
+        </a>
 
-        <div className="grid gap-3">
-          {variations.map((v) => (
-            <Link
-              key={v.id}
-              href={v.path}
-              className="group flex items-center justify-between p-6 rounded-xl border border-white/[0.06] hover:border-[#d4b996]/30 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300"
-            >
-              <div>
-                <p className="text-[#d4b996] text-[10px] tracking-[0.3em] uppercase mb-1">{v.id}</p>
-                <h2 className="font-display text-xl font-semibold text-white group-hover:text-[#d4b996] transition-colors">{v.name}</h2>
-                <p className="text-gray-500 text-sm mt-1">{v.desc}</p>
-              </div>
-              <span className="text-gray-600 group-hover:text-[#d4b996] transition-colors text-2xl ml-4">→</span>
-            </Link>
-          ))}
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-8">
+          <a href="#noira" className="text-[13px] font-medium tracking-[0.04em] uppercase text-[var(--color-charcoal-soft)] hover:text-[var(--color-accent)] transition-colors duration-200">Noira</a>
+          <a href="#shayvisuals" className="text-[13px] font-medium tracking-[0.04em] uppercase text-[var(--color-charcoal-soft)] hover:text-[var(--color-accent)] transition-colors duration-200">ShayVisuals</a>
+          <a href="#services" className="text-[13px] font-medium tracking-[0.04em] uppercase text-[var(--color-charcoal-soft)] hover:text-[var(--color-accent)] transition-colors duration-200">Services</a>
+          <a href="#contact" className="btn-primary text-[12px] !px-5 !py-2">Get in touch</a>
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden w-10 h-10 flex items-center justify-center"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        >
+          <span className={`block w-5 h-0.5 bg-[var(--color-charcoal)] transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-[3px]' : ''}`} />
+          <span className={`block w-5 h-0.5 bg-[var(--color-charcoal)] transition-all duration-300 mt-[7px] ${menuOpen ? '-rotate-45 -translate-y-[3px]' : ''}`} />
+        </button>
       </div>
-    </main>
-  )
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-[var(--color-border-soft)] px-6 py-6 flex flex-col gap-4">
+          <a href="#noira" onClick={() => setMenuOpen(false)} className="text-[13px] font-medium tracking-[0.04em] uppercase text-[var(--color-charcoal)]">Noira</a>
+          <a href="#shayvisuals" onClick={() => setMenuOpen(false)} className="text-[13px] font-medium tracking-[0.04em] uppercase text-[var(--color-charcoal)]">ShayVisuals</a>
+          <a href="#services" onClick={() => setMenuOpen(false)} className="text-[13px] font-medium tracking-[0.04em] uppercase text-[var(--color-charcoal)]">Services</a>
+          <a href="#contact" onClick={() => setMenuOpen(false)} className="btn-primary text-[12px] w-fit">Get in touch</a>
+        </div>
+      )}
+    </nav>
+  );
+}
+
+/* ───────────────────────────
+   PAGE
+   ─────────────────────────── */
+
+export default function Home() {
+  return (
+    <>
+      <Navbar />
+
+      <main id="main">
+        {/* ── HERO ── */}
+        {/* Split: dark left (Noira brand visual), light right (O'Shay intro) */}
+        <section className="min-h-[100dvh] flex flex-col md:flex-row">
+          {/* Dark side — Noira */}
+          <div className="md:w-1/2 relative flex items-center section-dark overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,var(--color-burnt)/0.12,transparent_60%)]" />
+            <div className="absolute inset-0 opacity-[0.03] bg-[url('https://picsum.photos/seed/noira-hero/1200/800')] bg-cover bg-center mix-blend-overlay" />
+            <div className="relative z-10 px-6 md:px-16 py-24 md:py-0 max-w-lg">
+              <Reveal>
+                <p className="eyebrow">Noira LLC</p>
+              </Reveal>
+              <Reveal delay={100}>
+                <h1 className="heading-hero text-[var(--color-surface)]">
+                  Your business,<br />
+                  <span className="text-[var(--color-gold)]">operated.</span>
+                </h1>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="text-[var(--color-cream-dim)] text-lg mt-6 max-w-md leading-relaxed">
+                  AI briefings, pipeline tracking, client management, automation. So you can focus on the work that pays.
+                </p>
+              </Reveal>
+              <Reveal delay={350}>
+                <div className="mt-8 flex gap-3">
+                  <a href="#noira" className="btn-primary">Explore Noira</a>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+
+          {/* Light side — ShayVisuals */}
+          <div className="md:w-1/2 relative flex items-center section-light overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_70%,var(--color-accent-soft),transparent_50%)]" />
+            <div className="relative z-10 px-6 md:px-16 py-24 md:py-0 max-w-lg">
+              <Reveal>
+                <p className="eyebrow">ShayVisuals LLC</p>
+              </Reveal>
+              <Reveal delay={100}>
+                <h1 className="heading-hero text-[var(--color-charcoal)]">
+                  Creative<br />
+                  <span className="text-[var(--color-accent)]">direction.</span>
+                </h1>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="text-[var(--color-charcoal-soft)] text-lg mt-6 max-w-md leading-relaxed">
+                  UI/UX design, brand identity, video production, photo pipeline. From concept to final cut.
+                </p>
+              </Reveal>
+              <Reveal delay={350}>
+                <div className="mt-8 flex gap-3">
+                  <a href="#shayvisuals" className="btn-primary">Explore ShayVisuals</a>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ── ABOUT — O'Shay positioning ── */}
+        <section className="py-24 md:py-32 px-6 section-light">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="max-w-3xl mx-auto text-center">
+              <Reveal>
+                <p className="eyebrow">The Operator</p>
+              </Reveal>
+              <Reveal delay={100}>
+                <h2 className="heading-h2 text-[var(--color-charcoal)]">
+                  Two companies.<br />One standard.
+                </h2>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="text-[var(--color-charcoal-soft)] text-lg mt-6 leading-relaxed max-w-2xl mx-auto">
+                  O&apos;Shay Lighten runs the full stack. <strong className="text-[var(--color-charcoal)]">Noira</strong> handles operations, automation, and pipeline so nothing falls through. <strong className="text-[var(--color-charcoal)]">ShayVisuals</strong> handles design, film, and brand identity so the work looks right. Same person. Same standard. Different disciplines.
+                </p>
+              </Reveal>
+            </div>
+
+            {/* Stats row */}
+            <Reveal delay={300}>
+              <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
+                {[
+                  { value: '2', label: 'Companies' },
+                  { value: '10+', label: 'Years experience' },
+                  { value: '100+', label: 'Projects shipped' },
+                  { value: '1', label: 'Standard' },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center p-6 md:p-8">
+                    <div className="text-4xl md:text-5xl font-semibold tracking-[-0.02em] text-[var(--color-accent)]">{stat.value}</div>
+                    <div className="text-[11px] tracking-[0.1em] text-[var(--color-charcoal-soft)] uppercase font-medium mt-2">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── NOIRA SECTION (dark) ── */}
+        <section id="noira" className="py-24 md:py-32 px-6 section-dark">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,var(--color-burnt)/0.06,transparent_50%)] pointer-events-none" />
+          <div className="relative z-10 max-w-[1200px] mx-auto">
+            <Reveal>
+              <p className="eyebrow">Noira LLC</p>
+              <h2 className="heading-h2 text-[var(--color-surface)] mt-4">
+                AI operations for<br />businesses that move
+              </h2>
+              <p className="text-[var(--color-cream-dim)] mt-4 max-w-xl leading-relaxed">
+                Noira briefs you every morning, tracks your pipeline, manages your clients, and builds your tools. The system behind the work.
+              </p>
+            </Reveal>
+
+            <div className="mt-14 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {NOIRA_SERVICES.map((svc, i) => (
+                <Reveal key={svc.title} delay={80 + i * 60}>
+                  <div className="card-dark p-7 md:p-8 group">
+                    <div className="w-10 h-10 flex items-center justify-center bg-[var(--color-burnt)]/10 text-[var(--color-burnt)] mb-4 group-hover:bg-[var(--color-burnt)]/20 transition-colors duration-300">
+                      <Icon name={svc.icon} size={20} />
+                    </div>
+                    <h3 className="text-[15px] font-semibold text-[var(--color-surface)] mb-2 group-hover:text-[var(--color-gold)] transition-colors duration-200">{svc.title}</h3>
+                    <p className="text-[13px] text-[var(--color-cream-dim)] leading-relaxed">{svc.desc}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            <Reveal delay={400}>
+              <div className="mt-10">
+                <a href="https://noira.us" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[var(--color-gold)] text-[13px] font-semibold tracking-[0.06em] uppercase hover:text-[var(--color-surface)] transition-colors duration-200 group">
+                  Visit noira.us
+                  <Icon name="arrowUpRight" size={14} />
+                </a>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── SHAYVISUALS SECTION (light) ── */}
+        <section id="shayvisuals" className="py-24 md:py-32 px-6 section-light">
+          <div className="max-w-[1200px] mx-auto">
+            <Reveal>
+              <p className="eyebrow">ShayVisuals LLC</p>
+              <h2 className="heading-h2 text-[var(--color-charcoal)] mt-4">
+                Creative direction<br />from concept to cut
+              </h2>
+              <p className="text-[var(--color-charcoal-soft)] mt-4 max-w-xl leading-relaxed">
+                UI/UX design, brand identity, film, video, photo pipeline. Every frame intentional, every pixel placed with purpose.
+              </p>
+            </Reveal>
+
+            <div className="mt-14 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {SHAY_SERVICES.map((svc, i) => (
+                <Reveal key={svc.title} delay={80 + i * 60}>
+                  <div className="card-light p-7 md:p-8 group">
+                    <div className="w-10 h-10 flex items-center justify-center bg-[var(--color-accent-soft)] text-[var(--color-accent)] mb-4 group-hover:bg-[var(--color-accent-medium)] transition-colors duration-300">
+                      <Icon name={svc.icon} size={20} />
+                    </div>
+                    <h3 className="text-[15px] font-semibold text-[var(--color-charcoal)] mb-2 group-hover:text-[var(--color-accent)] transition-colors duration-200">{svc.title}</h3>
+                    <p className="text-[13px] text-[var(--color-charcoal-soft)] leading-relaxed">{svc.desc}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            <Reveal delay={400}>
+              <div className="mt-10">
+                <a href="https://shayvisuals.net" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[var(--color-accent)] text-[13px] font-semibold tracking-[0.06em] uppercase hover:text-[var(--color-charcoal)] transition-colors duration-200 group">
+                  Visit shayvisuals.net
+                  <Icon name="arrowUpRight" size={14} />
+                </a>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── CTA ── */}
+        <section id="contact" className="py-24 md:py-32 px-6 section-dark">
+          <div className="max-w-[800px] mx-auto text-center">
+            <Reveal>
+              <p className="eyebrow">Let's work</p>
+              <h2 className="heading-h2 text-[var(--color-surface)] mt-4">
+                One call handles it all
+              </h2>
+              <p className="text-[var(--color-cream-dim)] text-lg mt-4 max-w-lg mx-auto leading-relaxed">
+                Need a site, a system, a brand, or a video? Reach out. No runaround, no surprise charges.
+              </p>
+            </Reveal>
+
+            <Reveal delay={200}>
+              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="tel:+14176934630" className="btn-primary text-[13px] !px-8 !py-3.5">
+                  <Icon name="phone" size={16} />
+                  (417) 693-4630
+                </a>
+                <a href="mailto:oshay@noira.us" className="btn-secondary-dark text-[13px] !px-8 !py-3.5">
+                  <Icon name="mail" size={16} />
+                  oshay@noira.us
+                </a>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      </main>
+
+      {/* ── FOOTER ── */}
+      <footer className="py-12 px-6 bg-[var(--color-ink)] border-t border-[var(--color-ink-border)]">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-8">
+            <div>
+              <p className="text-lg font-semibold text-[var(--color-surface)] tracking-[-0.02em]">
+                O&apos;Shay Lighten<span className="text-[var(--color-accent)]">.</span>
+              </p>
+              <p className="text-[13px] text-[var(--color-cream-dim)] mt-2">Serial entrepreneur. Digital solutions.</p>
+            </div>
+            <div className="flex gap-12">
+              <div>
+                <p className="text-[11px] tracking-[0.1em] text-[var(--color-gold)] uppercase font-semibold mb-3">Noira</p>
+                <a href="https://noira.us" target="_blank" rel="noopener noreferrer" className="block text-[13px] text-[var(--color-cream-dim)] hover:text-[var(--color-surface)] transition-colors duration-200">noira.us</a>
+              </div>
+              <div>
+                <p className="text-[11px] tracking-[0.1em] text-[var(--color-accent)] uppercase font-semibold mb-3">ShayVisuals</p>
+                <a href="https://shayvisuals.net" target="_blank" rel="noopener noreferrer" className="block text-[13px] text-[var(--color-cream-dim)] hover:text-[var(--color-surface)] transition-colors duration-200">shayvisuals.net</a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-[var(--color-ink-border)] pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-[12px] text-[var(--color-cream-dim)]">&copy; {new Date().getFullYear()} O&apos;Shay Lighten. All rights reserved.</p>
+            <div className="flex gap-6">
+              <a href="#" className="text-[12px] text-[var(--color-cream-dim)] hover:text-[var(--color-surface)] transition-colors duration-200">Privacy</a>
+              <a href="#" className="text-[12px] text-[var(--color-cream-dim)] hover:text-[var(--color-surface)] transition-colors duration-200">Terms</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </>
+  );
 }
